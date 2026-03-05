@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "Make entire item elements clickable by delegating clicks to an anchor link within",
   "main": "dist/anchorClick.js",
+  "module": "dist/anchorClick.esm.js",
   "types": "dist/anchorClick.d.ts",
   "exports": {
     ".": {
       "types": "./dist/anchorClick.d.ts",
+      "import": "./dist/anchorClick.esm.js",
       "require": "./dist/anchorClick.js",
-      "import": "./dist/anchorClick.js",
       "default": "./dist/anchorClick.js"
     }
   },

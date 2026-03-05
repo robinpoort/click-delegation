@@ -23,6 +23,19 @@ async function build() {
   fs.writeFileSync(path.join(DIST, 'anchorClick.d.ts'), types);
   console.log(`dist/anchorClick.d.ts: ${types.length} bytes`);
 
+  // ESM build — extract the factory function from the UMD wrapper
+  const factoryStart = source.indexOf(', function (window) {') + 2;
+  const factoryEnd = source.lastIndexOf('\n});');
+  const factory = source.slice(factoryStart, factoryEnd).trimEnd();
+  const esmSource = [
+    'var anchorClick = (' + factory + ')(typeof globalThis !== \'undefined\' ? globalThis : typeof window !== \'undefined\' ? window : this);',
+    '',
+    'export default anchorClick;',
+    ''
+  ].join('\n');
+  fs.writeFileSync(path.join(DIST, 'anchorClick.esm.js'), esmSource);
+  console.log(`dist/anchorClick.esm.js: ${esmSource.length} bytes`);
+
   // Minified build
   const minified = await minify(source, {
     compress: { passes: 2 },
