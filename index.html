@@ -164,21 +164,9 @@
       </div>
     </section>
 
-    <!-- ==============================
-         Log
-         ============================== -->
-    <section class="test-section">
-      <h2>Navigation log</h2>
-      <p>Every navigation attempt is intercepted here so the page doesn't actually navigate during testing.</p>
-      <div class="log" id="log">
-        <div class="log-empty">No clicks yet…</div>
-      </div>
-      <div class="button-row">
-        <button onclick="clearLog()">Clear log</button>
-      </div>
-    </section>
-
   </main>
+
+  <div id="log" class="log-float"></div>
 
   <script src="src/anchorClick.js"></script>
   <script>
@@ -200,18 +188,12 @@
     const logEl = document.getElementById('log');
 
     function log(msg) {
-      const empty = logEl.querySelector('.log-empty');
-      if (empty) empty.remove();
+      logEl.classList.add('is-visible');
       const entry = document.createElement('div');
+      entry.className = 'log-entry';
       entry.textContent = msg;
-      logEl.prepend(entry);
-      while (logEl.children.length > 50) {
-        logEl.removeChild(logEl.lastChild);
-      }
-    }
-
-    function clearLog() {
-      logEl.innerHTML = '<div class="log-empty">No clicks yet…</div>';
+      logEl.append(entry);
+      logEl.scrollTop = logEl.scrollHeight;
     }
 
     // Intercept anchor clicks so the page doesn't actually navigate

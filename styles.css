@@ -216,30 +216,47 @@ button:active {
 }
 
 /* ==============================
-   Log
+   Log (floating)
    ============================== */
 
-.log {
+.log-float {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  width: min(480px, calc(100vw - 3rem));
+  max-height: min(480px, 95vh);
+  overflow-y: auto;
   background: #1a1a2e;
   color: #7ec8e3;
   font-family: "SF Mono", "Fira Code", "Fira Mono", monospace;
   font-size: 0.75rem;
   line-height: 1.6;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 8px;
-  max-height: 200px;
-  overflow-y: auto;
-  margin-top: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.log div {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+.log-float.is-visible {
+  opacity: 1;
+}
+
+.log-entry {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding: 0.1rem 0;
+  animation: log-in 0.2s ease forwards;
 }
 
-.log-empty {
-  color: rgba(126, 200, 227, 0.4);
-  font-style: italic;
+.log-entry:first-child {
+  border-top: none;
+}
+
+@keyframes log-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* ==============================
