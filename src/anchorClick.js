@@ -11,7 +11,7 @@
 })(typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? window : this, function (window) {
 
   if (!('querySelector' in document && 'addEventListener' in window)) {
-    return function () {};
+    return function () { return { destroy: function () {} }; };
   }
 
   return function anchorClick(options) {
@@ -20,7 +20,8 @@
       link: 'data-anchor-click',
       ignore: 'data-anchor-ignore',
       clickableClass: 'is-clickable',
-      downUpTime: 200
+      downUpTime: 200,
+      onClick: null
     }, options);
 
     var parentAttr = config.parent;
@@ -29,7 +30,9 @@
     var clickableClass = config.clickableClass;
     var downUpTime = config.downUpTime;
     var down;
-    var up;
+    var observer;
+    var onPointerDown;
+    var onPointerUp;
 
     function handleItem(item) {
       var link = item.querySelector('[' + linkAttr + ']');
@@ -40,78 +43,121 @@
       }
     }
 
-    document.querySelectorAll('[' + parentAttr + ']').forEach(function (item) {
-      handleItem(item);
-    });
+    function init() {
+      document.querySelectorAll('[' + parentAttr + ']').forEach(function (item) {
+        handleItem(item);
+      });
 
-    var observer = new MutationObserver(function (mutations) {
-      mutations.forEach(function (mutation) {
-        if (mutation.type === 'childList') {
-          mutation.addedNodes.forEach(function (addedNode) {
-            if (addedNode && addedNode.nodeType === Node.ELEMENT_NODE) {
-              if (addedNode.hasAttribute(parentAttr)) {
-                handleItem(addedNode);
+      observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(function (addedNode) {
+              if (addedNode && addedNode.nodeType === Node.ELEMENT_NODE) {
+                if (addedNode.hasAttribute(parentAttr)) {
+                  handleItem(addedNode);
+                }
+                addedNode.querySelectorAll('[' + parentAttr + ']').forEach(function (item) {
+                  handleItem(item);
+                });
               }
-              addedNode.querySelectorAll('[' + parentAttr + ']').forEach(function (item) {
-                handleItem(item);
-              });
-            }
-          });
-        } else if (mutation.type === 'attributes') {
-          var target = mutation.target;
-          if (mutation.attributeName === parentAttr) {
-            handleItem(target);
-          } else if (mutation.attributeName === linkAttr) {
-            var parent = target.closest('[' + parentAttr + ']');
-            if (parent) {
-              handleItem(parent);
+            });
+          } else if (mutation.type === 'attributes') {
+            var target = mutation.target;
+            if (mutation.attributeName === parentAttr) {
+              handleItem(target);
+            } else if (mutation.attributeName === linkAttr) {
+              var parent = target.closest('[' + parentAttr + ']');
+              if (parent) {
+                handleItem(parent);
+              }
             }
           }
-        }
+        });
       });
-    });
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: [parentAttr, linkAttr]
-    });
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: [parentAttr, linkAttr]
+      });
 
-    window.addEventListener('mousedown', function () {
-      down = Number(new Date());
-    });
-
-    window.addEventListener('mouseup', function (event) {
-      if (event.target.hasAttribute('href') || event.target.tagName === 'BUTTON') {
-        return;
-      }
-
-      up = Number(new Date());
-      var item = event.target.closest('[' + parentAttr + ']');
-      var ignore = event.target.closest('[' + ignoreAttr + '], [href]:not([' + linkAttr + '])');
-
-      if (!item) {
-        return;
-      }
-
-      var itemValue = item.getAttribute(parentAttr);
-      var link = itemValue && itemValue.length > 0
-        ? item.querySelector('[' + linkAttr + '="' + itemValue + '"]')
-        : item.querySelector('[' + linkAttr + ']');
-
-      if (!link) {
-        return;
-      }
-
-      if (item && up - down < downUpTime && !ignore) {
-        if ((event.ctrlKey && event.ctrlKey === true) || (event.which && event.which === 2)) {
-          window.open(link);
-        } else {
-          link.click();
+      onPointerDown = function (event) {
+        if (event.button !== undefined && event.button !== 0 && event.button !== 1) {
+          return;
         }
+        down = Number(new Date());
+      };
+
+      onPointerUp = function (event) {
+        // Ignore right-click
+        if (event.button === 2) {
+          return;
+        }
+
+        // Ignore direct clicks on anchors and buttons
+        if (event.target.hasAttribute('href') || event.target.tagName === 'BUTTON') {
+          return;
+        }
+
+        var up = Number(new Date());
+        var item = event.target.closest('[' + parentAttr + ']');
+        var ignore = event.target.closest('[' + ignoreAttr + '], [href]:not([' + linkAttr + '])');
+
+        if (!item) {
+          return;
+        }
+
+        var itemValue = item.getAttribute(parentAttr);
+        var link = itemValue && itemValue.length > 0
+          ? item.querySelector('[' + linkAttr + '="' + itemValue + '"]')
+          : item.querySelector('[' + linkAttr + ']');
+
+        if (!link) {
+          return;
+        }
+
+        if (up - down < downUpTime && !ignore) {
+          if (config.onClick) {
+            config.onClick(item, link);
+          }
+          if (event.ctrlKey || event.metaKey || event.button === 1) {
+            window.open(link.href || link);
+          } else {
+            link.click();
+          }
+        }
+      };
+
+      window.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointerup', onPointerUp);
+    }
+
+    if (!document.body) {
+      document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+      init();
+    }
+
+    return {
+      destroy: function () {
+        if (observer) {
+          observer.disconnect();
+          observer = null;
+        }
+        if (onPointerDown) {
+          window.removeEventListener('pointerdown', onPointerDown);
+          onPointerDown = null;
+        }
+        if (onPointerUp) {
+          window.removeEventListener('pointerup', onPointerUp);
+          onPointerUp = null;
+        }
+        document.querySelectorAll('[' + parentAttr + ']').forEach(function (item) {
+          item.classList.remove(clickableClass);
+        });
       }
-    });
+    };
   };
 
 });

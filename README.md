@@ -2,7 +2,7 @@
 
 Makes entire items clickable by delegating clicks to an anchor link within. Useful for layouts where you want a large clickable area without wrapping everything in an `<a>` tag (which is invalid HTML for block-level content).
 
-Handles text selection (no accidental navigation), Ctrl+click and middle-click (opens in new tab), and dynamically added items via MutationObserver.
+Handles text selection (no accidental navigation), Ctrl+click and middle-click (opens in new tab), touch and pointer devices, and dynamically added items via MutationObserver.
 
 ## Installation
 
@@ -43,12 +43,47 @@ The item automatically receives the class `is-clickable`, which you can use to s
 All options are optional. Defaults shown below:
 
 ```js
-anchorClick({
-  parent: 'data-anchor-parent',  // attribute on the clickable item
-  link: 'data-anchor-click',     // attribute on the target anchor
-  ignore: 'data-anchor-ignore',  // attribute to exclude child elements
+const instance = anchorClick({
+  parent: 'data-anchor-parent',   // attribute on the clickable item
+  link: 'data-anchor-click',      // attribute on the target anchor
+  ignore: 'data-anchor-ignore',   // attribute to exclude child elements
   clickableClass: 'is-clickable', // class added to clickable items
-  downUpTime: 200                // max ms between mousedown/up to count as a click
+  downUpTime: 200,                // max ms between pointerdown/up to count as a click
+  onClick: null                   // callback fired on navigation: (item, link) => {}
+});
+```
+
+### Legacy / custom attribute names
+
+```js
+anchorClick({
+  parent: 'data-card',
+  link: 'data-card-link',
+  ignore: 'data-card-ignore',
+  clickableClass: 'is-clickable-card'
+});
+```
+
+## destroy()
+
+`anchorClick()` returns an instance with a `destroy()` method that removes all event listeners, disconnects the MutationObserver and removes `clickableClass` from all items. Useful in SPAs or when switching configurations.
+
+```js
+const instance = anchorClick();
+
+// Later:
+instance.destroy();
+```
+
+## onClick callback
+
+Use `onClick` to run custom logic when an item is navigated to — useful for analytics, state updates or preventing default navigation:
+
+```js
+anchorClick({
+  onClick(item, link) {
+    console.log('Navigating to', link.href);
+  }
 });
 ```
 
@@ -78,10 +113,13 @@ Buttons and anchor tags are always ignored automatically.
 
 ## Behaviour
 
+- **Touch & pointer support** — uses `pointerdown`/`pointerup` so mouse, touch and stylus all work.
 - **Text selection** — clicking and dragging to select text does not trigger navigation (threshold: 200ms).
-- **Ctrl+click / middle-click** — opens the link in a new tab.
+- **Ctrl/Meta+click / middle-click** — opens the link in a new tab.
+- **Right-click** — ignored, so the browser context menu works as expected.
+- **Script in `<head>`** — safe to include before `<body>` exists; initialisation is deferred to `DOMContentLoaded`.
 - **Dynamic content** — items added to the DOM after page load are handled automatically via `MutationObserver`.
-- **Attribute changes** — adding or removing `data-anchor-parent` or `data-anchor-click` on existing elements is detected automatically. For example, adding `data-anchor-click` to a link inside an existing item will make that item clickable without re-initialising.
+- **Attribute changes** — adding or removing `data-anchor-parent` or `data-anchor-click` on existing elements is detected automatically.
 
 ## License
 

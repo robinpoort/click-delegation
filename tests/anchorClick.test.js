@@ -1,37 +1,61 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import anchorClick from '../src/anchorClick.js';
 
 describe('anchorClick — default attributes', () => {
+  let instance;
+
   beforeEach(() => {
     document.body.innerHTML = '';
+    if (instance) instance.destroy();
   });
 
-  it('adds clickable class to cards with a link', () => {
+  it('adds clickable class to items with a link', () => {
     document.body.innerHTML = `
       <div data-anchor-parent>
         <a href="/test" data-anchor-click>Title</a>
       </div>
     `;
-    anchorClick();
-    const card = document.querySelector('[data-anchor-parent]');
-    expect(card.classList.contains('is-clickable')).toBe(true);
+    instance = anchorClick();
+    const item = document.querySelector('[data-anchor-parent]');
+    expect(item.classList.contains('is-clickable')).toBe(true);
   });
 
-  it('does not add clickable class to cards without a link', () => {
+  it('does not add clickable class to items without a link', () => {
     document.body.innerHTML = `
       <div data-anchor-parent>
         <p>No link here</p>
       </div>
     `;
-    anchorClick();
-    const card = document.querySelector('[data-anchor-parent]');
-    expect(card.classList.contains('is-clickable')).toBe(false);
+    instance = anchorClick();
+    const item = document.querySelector('[data-anchor-parent]');
+    expect(item.classList.contains('is-clickable')).toBe(false);
+  });
+
+  it('returns a destroy method', () => {
+    instance = anchorClick();
+    expect(typeof instance.destroy).toBe('function');
+  });
+
+  it('removes clickable class on destroy', () => {
+    document.body.innerHTML = `
+      <div data-anchor-parent>
+        <a href="/test" data-anchor-click>Title</a>
+      </div>
+    `;
+    instance = anchorClick();
+    const item = document.querySelector('[data-anchor-parent]');
+    expect(item.classList.contains('is-clickable')).toBe(true);
+    instance.destroy();
+    expect(item.classList.contains('is-clickable')).toBe(false);
   });
 });
 
 describe('anchorClick — custom attributes', () => {
+  let instance;
+
   beforeEach(() => {
     document.body.innerHTML = '';
+    if (instance) instance.destroy();
   });
 
   it('works with custom attribute names (legacy data-card)', () => {
@@ -40,9 +64,9 @@ describe('anchorClick — custom attributes', () => {
         <a href="/test" data-card-link>Title</a>
       </div>
     `;
-    anchorClick({ parent: 'data-card', link: 'data-card-link', ignore: 'data-card-ignore', clickableClass: 'is-clickable-card' });
-    const card = document.querySelector('[data-card]');
-    expect(card.classList.contains('is-clickable-card')).toBe(true);
+    instance = anchorClick({ parent: 'data-card', link: 'data-card-link', ignore: 'data-card-ignore', clickableClass: 'is-clickable-card' });
+    const item = document.querySelector('[data-card]');
+    expect(item.classList.contains('is-clickable-card')).toBe(true);
   });
 
   it('uses custom clickableClass option', () => {
@@ -51,8 +75,26 @@ describe('anchorClick — custom attributes', () => {
         <a href="/test" data-anchor-click>Title</a>
       </div>
     `;
-    anchorClick({ clickableClass: 'my-custom-class' });
-    const card = document.querySelector('[data-anchor-parent]');
-    expect(card.classList.contains('my-custom-class')).toBe(true);
+    instance = anchorClick({ clickableClass: 'my-custom-class' });
+    const item = document.querySelector('[data-anchor-parent]');
+    expect(item.classList.contains('my-custom-class')).toBe(true);
+  });
+
+  it('calls onClick callback on navigation', () => {
+    document.body.innerHTML = `
+      <div data-anchor-parent>
+        <a href="/test" data-anchor-click>Title</a>
+      </div>
+    `;
+    const onClick = vi.fn();
+    instance = anchorClick({ onClick });
+    const item = document.querySelector('[data-anchor-parent]');
+    const link = document.querySelector('[data-anchor-click]');
+
+    // Simulate a fast pointerdown + pointerup
+    window.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    item.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+
+    expect(onClick).toHaveBeenCalledWith(item, link);
   });
 });

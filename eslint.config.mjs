@@ -51,7 +51,8 @@ export default [
       globals: {
         window: 'readonly',
         document: 'readonly',
-        __dirname: 'readonly'
+        __dirname: 'readonly',
+        PointerEvent: 'readonly'
       }
     }
   }

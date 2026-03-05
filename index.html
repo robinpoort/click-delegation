@@ -153,6 +153,18 @@
     </section>
 
     <!-- ==============================
+         6. Destroy / re-init
+         ============================== -->
+    <section class="test-section">
+      <h2>Destroy / re-init</h2>
+      <p><code>anchorClick()</code> returns an instance with a <code>destroy()</code> method that removes all event listeners, disconnects the MutationObserver and removes <code>is-clickable</code> from all items.</p>
+      <div class="button-row">
+        <button onclick="destroyInstance()">destroy()</button>
+        <button onclick="reinitInstance()">Re-init</button>
+      </div>
+    </section>
+
+    <!-- ==============================
          Log
          ============================== -->
     <section class="test-section">
@@ -170,8 +182,12 @@
 
   <script src="src/anchorClick.js"></script>
   <script>
-    // Default init (uses data-anchor-parent, data-anchor-click, data-anchor-ignore)
-    anchorClick();
+    // Default init — returns an instance with destroy()
+    var instance = anchorClick({
+      onClick: function (item, link) {
+        log('onClick callback — item: ' + (item.id || item.className.split(' ')[0]) + ', href: ' + link.getAttribute('href'));
+      }
+    });
 
     // Example for older projects using data-card:
     // anchorClick({ parent: 'data-card', link: 'data-card-link', ignore: 'data-card-ignore', clickableClass: 'is-clickable-card' });
@@ -235,6 +251,24 @@
       document.getElementById('dynamic-items').innerHTML = '';
       itemCount = 0;
       log('Dynamic items cleared');
+    }
+
+    // ==============================
+    // Destroy / re-init
+    // ==============================
+
+    function destroyInstance() {
+      instance.destroy();
+      log('instance.destroy() called — event listeners removed, is-clickable classes removed');
+    }
+
+    function reinitInstance() {
+      instance = anchorClick({
+        onClick: function (item, link) {
+          log('onClick callback — item: ' + (item.id || item.className.split(' ')[0]) + ', href: ' + link.getAttribute('href'));
+        }
+      });
+      log('anchorClick() re-initialised');
     }
 
     // ==============================
