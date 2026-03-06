@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.1] - 2026-03-06
+
+### Changed
+- Modernised library source and build script to ES2015+ syntax (const/let, arrow functions, template literals)
+
+### Added
+- Demo: floating log panel (fixed bottom-right, shows navigation events and interactions)
+
+### Docs
+- Clarified that the `onClick` callback fires before navigation and cannot cancel it
+- Documented that keyboard users navigate via the inner `<a>` directly
+
 ## [1.0.0] - 2026-03-05
 
 ### Added

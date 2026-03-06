@@ -1,6 +1,6 @@
 {
   "name": "anchor-click",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Make entire item elements clickable by delegating clicks to an anchor link within",
   "main": "dist/anchorClick.js",
   "module": "dist/anchorClick.esm.js",
