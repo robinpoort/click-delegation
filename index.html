@@ -190,14 +190,14 @@
   <script src="src/anchorClick.js"></script>
   <script>
     // Default init — returns an instance with destroy()
-    var instance = anchorClick();
+    let instance = anchorClick();
 
     // Separate instance for the onClick callback demo (uses custom attribute names)
     anchorClick({
       parent: 'data-callback-item',
       link: 'data-callback-link',
-      onClick: function (item, link) {
-        log('onClick: href=' + link.getAttribute('href'));
+      onClick: (item, link) => {
+        log(`onClick: href=${link.getAttribute('href')}`);
       }
     });
   </script>
@@ -209,7 +209,7 @@
     const logEl = document.getElementById('log');
     const logEntries = document.getElementById('log-entries');
 
-    document.getElementById('log-clear-btn').addEventListener('click', function () {
+    document.getElementById('log-clear-btn').addEventListener('click', () => {
       logEntries.innerHTML = '';
       logEl.classList.remove('is-visible');
     });
@@ -226,7 +226,7 @@
     // Intercept anchor clicks so the page doesn't actually navigate
     document.addEventListener('click', (e) => {
       const link = e.target.closest('a[href]');
-      if (link && !e.ctrlKey && e.which !== 2) {
+      if (link && !e.ctrlKey && e.button !== 2) {
         e.preventDefault();
         log(`Navigated to: ${link.getAttribute('href')}`);
       }
