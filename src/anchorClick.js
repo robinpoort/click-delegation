@@ -11,7 +11,7 @@
 })(typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? window : this, function (window) {
 
   if (!(typeof document !== 'undefined' && document && 'querySelector' in document && 'addEventListener' in window)) {
-    return function () { return { destroy: function () {} }; };
+    return () => ({ destroy() {} });
   }
 
   return function anchorClick(options) {
@@ -38,29 +38,27 @@
     let initialized = false;
     let destroyed = false;
 
-    function handleItem(item) {
+    const handleItem = (item) => {
       let link;
       try {
         link = item.querySelector(`[${linkAttr}]`);
       } catch (e) {
         return;
       }
-      if (link !== null) {
+      if (link) {
         item.classList.add(clickableClass);
       } else {
         item.classList.remove(clickableClass);
       }
-    }
+    };
 
-    function init() {
+    const init = () => {
       if (initialized || destroyed) {
         return;
       }
       initialized = true;
 
-      document.querySelectorAll(`[${parentAttr}]`).forEach((item) => {
-        handleItem(item);
-      });
+      document.querySelectorAll(`[${parentAttr}]`).forEach(handleItem);
 
       observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
@@ -70,9 +68,7 @@
                 if (addedNode.hasAttribute(parentAttr)) {
                   handleItem(addedNode);
                 }
-                addedNode.querySelectorAll(`[${parentAttr}]`).forEach((item) => {
-                  handleItem(item);
-                });
+                addedNode.querySelectorAll(`[${parentAttr}]`).forEach(handleItem);
               }
             });
           } else if (mutation.type === 'attributes') {
@@ -179,7 +175,7 @@
       window.addEventListener('pointerdown', onPointerDown);
       window.addEventListener('pointerup', onPointerUp);
       window.addEventListener('pointercancel', onPointerCancel);
-    }
+    };
 
     if (!document.body) {
       onDomReady = () => {
