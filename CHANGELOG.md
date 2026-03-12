@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.0.0] - 2026-03-12
+
+### Changed
+- Renamed package from `anchor-click` to `click-delegation`
+- Renamed factory function from `anchorClick()` to `clickDelegation()`
+- Renamed attributes: `data-anchor-target` → `data-delegate`, `data-anchor` → `data-delegate-to`, `data-anchor-ignore` → `data-delegate-ignore`
+- Renamed `link` option to `target`
+- Renamed TypeScript interfaces: `AnchorClickOptions` → `ClickDelegationOptions`, `AnchorClickInstance` → `ClickDelegationInstance`
+
+### Added
+- Support for buttons and custom elements as delegation targets — not just anchor links
+- Ctrl/Meta+click and middle-click fall back to `click()` when target has no `href`
+
+### Refactored
+- Extracted `resolveTarget()`, `shouldIgnoreElement()` and `getClosest()` as named helper functions
+- Replaced `down` timestamp with `activePress` object tracking time, pointerId and item — prevents drag-from-A-release-on-B triggers
+- `getClosest()` guards against missing `.closest()` on non-element targets
+
 ## [1.0.1] - 2026-03-06
 
 ### Changed
