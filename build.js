@@ -22,7 +22,7 @@ async function build() {
 
   // ESM build — extract the factory function from the UMD wrapper
   const factoryStart = source.indexOf(', function (window) {') + 2;
-  const factoryEnd = source.lastIndexOf('\n});');
+  const factoryEnd = source.lastIndexOf('\n});') + 2;
   const factory = source.slice(factoryStart, factoryEnd).trimEnd();
   const esmSource = `const clickDelegation = (${factory})(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : this);\n\nexport default clickDelegation;\n`;
   writeFileSync(join(DIST, 'clickDelegation.esm.js'), esmSource);
